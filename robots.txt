@@ -1,0 +1,18 @@
+# robots.txt for www.yourdomain.com
+# Generated on 2025-06-21
+
+User-agent: *
+Disallow: /admin/
+Disallow: /login/
+Disallow: /private/
+Disallow: /tmp/
+Disallow: /cgi-bin/
+Disallow: /wp-admin/       # 如果使用 WordPress
+Disallow: /wp-includes/    # 如果使用 WordPress
+Disallow: /search/         # 屏蔽搜索结果页（可选）
+Disallow: /?               # 屏蔽动态URL（可选）
+Allow: /public/            # 明确允许某个被屏蔽父目录下的子目录
+Allow: /wp-admin/admin-ajax.php  # 允许 WordPress 必要文件
+
+# 网站地图链接（推荐添加）
+Sitemap: https://www.yourdomain.com/sitemap.xml
