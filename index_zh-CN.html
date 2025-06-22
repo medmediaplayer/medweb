@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedMediaPlayer - 开源媒体播放器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* 浅色模式变量 */
+            --primary-color: #1976d2;
+            --primary-dark: #0d47a1;
+            --primary-light: #bbdefb;
+            --background: #ffffff;
+            --background-alt: #f5f7fa;
+            --text: #333333;
+            --text-secondary: #666666;
+            --border: #e0e0e0;
+            --card-bg: #ffffff;
+            --footer-bg: #f5f7fa;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --dev-badge: #ff6b6b;
+            --success: #4caf50;
+        }
+
+        .dark-mode {
+            /* 深色模式变量 */
+            --primary-color: #64b5f6;
+            --primary-dark: #2196f3;
+            --primary-light: #0d47a1;
+            --background: #121212;
+            --background-alt: #1e1e1e;
+            --text: #e0e0e0;
+            --text-secondary: #aaaaaa;
+            --border: #333333;
+            --card-bg: #1e1e1e;
+            --footer-bg: #0a0a0a;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --dev-badge: #ff5252;
+            --success: #66bb6a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s, transform 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 导航栏样式 */
+        header {
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            color: var(--primary-color);
+            font-size: 28px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 16px;
+            padding: 8px 0;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-color);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theme-toggle {
+            background: var(--background-alt);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-light);
+        }
+
+        .theme-toggle i {
+            font-size: 22px;
+            color: var(--primary-color);
+        }
+
+        .download-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .download-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .download-btn.disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .download-btn.disabled:hover {
+            background: #cccccc;
+        }
+        
+        .language-selector {
+            position: relative;
+        }
+        
+        .language-btn {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+        
+        .language-btn:hover {
+            background: var(--background-alt);
+        }
+        
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 10px 0;
+            min-width: 150px;
+            display: none;
+            z-index: 100;
+        }
+        
+        .language-dropdown.show {
+            display: block;
+        }
+        
+        .language-option {
+            padding: 10px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s;
+        }
+        
+        .language-option:hover {
+            background: var(--background-alt);
+        }
+        
+        .language-flag {
+            width: 24px;
+            height: 16px;
+            object-fit: cover;
+            border-radius: 2px;
+        }
+        
+        .dev-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--dev-badge);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.9;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0.9;
+            }
+        }
+
+        /* Hero 区域 */
+        .hero {
+            padding: 100px 0;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--background) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: rgba(25, 118, 210, 0.1);
+            z-index: 0;
+        }
+
+        .hero-content {
+            display: flex;
+            align-items: center;
+            gap: 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-text {
+            flex: 1;
+        }
+        
+        .typewriter-container {
+            min-height: 100px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-text h1 {
+            font-size: 48px;
+            line-height: 1.2;
+            margin-bottom: 15px;
+            color: var(--text);
+            text-align: center;
+        }
+        
+        .typewriter-text {
+            font-size: 48px;
+            line-height: 1.2;
+            color: var(--primary-color);
+            font-weight: 700;
+            border-right: 3px solid var(--primary-color);
+            white-space: nowrap;
+            overflow: hidden;
+            min-width: 20px;
+            padding-right: 8px;
+            animation: blink 0.75s step-end infinite;
+        }
+        
+        @keyframes blink {
+            from, to { border-color: transparent; }
+            50% { border-color: var(--primary-color); }
+        }
+
+        .hero-text p {
+            font-size: 20px;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            max-width: 600px;
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-secondary.disabled {
+            border-color: #cccccc;
+            color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary.disabled:hover {
+            background: transparent;
+            color: #cccccc;
+        }
+
+        .hero-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+            background: var(--background-alt);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        
+        .hero-image:hover {
+            transform: scale(1.02);
+        }
+        
+        .platform-icons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+        }
+        
+        .platform-icon-large {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.3s;
+            position: relative;
+        }
+        
+        .platform-icon-large:hover {
+            transform: translateY(-8px);
+        }
+        
+        .platform-icon-large i {
+            font-size: 50px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            transition: color 0.3s;
+        }
+        
+        .platform-icon-large:hover i {
+            color: var(--primary-dark);
+        }
+        
+        .platform-icon-large span {
+            font-size: 14px;
+            color: var(--text);
+        }
+        
+        .platform-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: var(--dev-badge);
+            color: white;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        /* 功能区域 */
+        .features {
+            padding: 80px 0;
+            background-color: var(--background-alt);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            font-size: 36px;
+            color: var(--text);
+            margin-bottom: 15px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .section-title p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 30px auto 0;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+            position: relative;
+            border-top: 4px solid var(--primary-color);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 40px;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1);
+        }
+
+        .feature-card h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: var(--text);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* 下载区域 */
+        .downloads {
+            padding: 80px 0;
+            background-color: var(--background);
+        }
+
+        .download-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background: var(--background-alt);
+            color: var(--text);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .platform-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.3s;
+            position: relative;
+            border: 1px solid var(--border);
+        }
+
+        .platform-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .platform-icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .platform-card h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: var(--text);
+        }
+
+        .platform-card p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+        
+        .download-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        /* 开发状态区域 */
+        .dev-status {
+            padding: 80px 0;
+            background-color: var(--background-alt);
+        }
+
+        .progress-bar {
+            margin-top: 20px;
+            height: 8px;
+            background: var(--background-alt);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-value {
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        /* 页脚 */
+        footer {
+            background: var(--footer-bg);
+            padding: 60px 0 30px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-col h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--text);
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .footer-col h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .footer-links a i {
+            width: 20px;
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        /* 语言切换模态框 */
+        .language-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .language-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .language-modal-content {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(30px);
+            transition: transform 0.4s;
+        }
+        
+        .language-modal.active .language-modal-content {
+            transform: translateY(0);
+        }
+        
+        .language-modal h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        .language-modal p {
+            margin-bottom: 30px;
+            color: var(--text);
+            font-size: 18px;
+        }
+        
+        .language-modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .language-modal .download-btn {
+            flex: 1;
+        }
+        
+        .language-modal .btn-secondary {
+            flex: 1;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 992px) {
+            .hero-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .hero-text {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .typewriter-container {
+                min-height: 80px;
+                justify-content: center;
+            }
+            
+            .hero-text h1, .typewriter-text {
+                font-size: 36px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .hero-text p {
+                font-size: 18px;
+            }
+            
+            .section-title h2 {
+                font-size: 28px;
+            }
+            
+            .language-modal-buttons {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-buttons {
+                flex-direction: column;
+            }
+            
+            .download-tabs {
+                flex-direction: column;
+            }
+            
+            .hero-text h1, .typewriter-text {
+                font-size: 28px;
+            }
+            
+            .typewriter-container {
+                min-height: 60px;
+            }
+            
+            .language-modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 语言切换模态框 -->
+    <div class="language-modal" id="languageModal">
+        <div class="language-modal-content">
+            <h3>即将切换语言</h3>
+            <p id="modalMessage">您将切换到简体中文页面</p>
+            <div class="language-modal-buttons">
+                <button class="download-btn" id="confirmLanguage">
+                    <i class="fas fa-check"></i> 确认切换
+                </button>
+                <button class="btn-secondary" id="cancelLanguage">
+                    <i class="fas fa-times"></i> 取消
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo">
+                    <i class="fas fa-play-circle logo-icon"></i>
+                    <span class="logo-text">MedMediaPlayer</span>
+                </a>
+                
+                <div class="nav-links">
+                    <a href="#"><i class="fas fa-home"></i> 首页</a>
+                    <a href="#features"><i class="fas fa-star"></i> 功能</a>
+                    <a href="#downloads"><i class="fas fa-download"></i> 下载</a>
+                    <a href="#"><i class="fas fa-book"></i> 文档</a>
+                    <a href="#"><i class="fas fa-users"></i> 社区</a>
+                    <a href="#"><i class="fas fa-info-circle"></i> 关于</a>
+                    
+                    <div class="language-selector">
+                        <button class="language-btn">
+                            <img src="https://flagcdn.com/w20/cn.png" class="language-flag" alt="简体中文">
+                            简体中文 <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="language-dropdown">
+                            <div class="language-option" data-lang="zh-CN">
+                                <img src="https://flagcdn.com/w20/cn.png" class="language-flag" alt="简体中文">
+                                <span>简体中文</span>
+                            </div>
+                            <div class="language-option" data-lang="zh-TW">
+                                <span>繁體中文</span>
+                            </div>
+                            <div class="language-option" data-lang="en">
+                                <img src="https://flagcdn.com/w20/us.png" class="language-flag" alt="English">
+                                <span>English</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="nav-actions">
+                    <button class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-sun"></i>
+                    </button>
+                    <button class="download-btn">
+                        <i class="fas fa-download"></i> 立即下载
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero 区域 -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <div class="typewriter-container">
+                        <h1><span class="typewriter-text" id="typewriter"></span></h1>
+                    </div>
+                    <p>MedMediaPlayer 是一款免费、开源、跨平台的媒体播放器，支持几乎所有媒体格式，无广告，无用户追踪。</p>
+                    <div class="hero-buttons">
+                        <button class="download-btn">
+                            <i class="fas fa-download"></i> 下载 v3.0.0
+                        </button>
+                        <button class="btn-secondary" id="viewFeatures">
+                            <i class="fas fa-star"></i> 查看功能
+                        </button>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="platform-icons">
+                        <div class="platform-icon-large">
+                            <i class="fab fa-windows"></i>
+                            <span>Windows</span>
+                        </div>
+                        <div class="platform-icon-large">
+                            <i class="fab fa-apple"></i>
+                            <span>macOS</span>
+                            <span class="platform-badge">开发中</span>
+                        </div>
+                        <div class="platform-icon-large">
+                            <i class="fab fa-linux"></i>
+                            <span>Linux</span>
+                        </div>
+                        <div class="platform-icon-large">
+                            <i class="fab fa-android"></i>
+                            <span>Android</span>
+                            <span class="platform-badge">开发中</span>
+                        </div>
+                        <div class="platform-icon-large">
+                            <i class="fab fa-apple"></i>
+                            <span>iOS</span>
+                            <span class="platform-badge">开发中</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 功能区域 -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>为什么选择 MedMediaPlayer</h2>
+                <p>功能强大且易于使用的媒体播放解决方案</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                    <h3>支持所有格式</h3>
+                    <p>支持播放几乎所有音频和视频格式，包括 MP4, AVI, MKV, MOV, FLV, MP3, AAC 等，无需额外编解码器。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-sync"></i>
+                    </div>
+                    <h3>跨平台支持</h3>
+                    <p>在 Windows, macOS, Linux, Android 和 iOS 上提供一致的用户体验，支持同步播放进度和媒体库。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>硬件加速</h3>
+                    <p>利用 GPU 进行硬件加速解码，显著降低 CPU 使用率，实现更流畅的 4K/8K 视频播放体验。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>安全隐私</h3>
+                    <p>完全开源，无广告，无用户追踪，不收集任何个人信息，尊重您的隐私权。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h3>高度可定制</h3>
+                    <p>支持自定义皮肤、界面布局和插件扩展，满足高级用户的个性化需求。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h3>流媒体支持</h3>
+                    <p>支持 HTTP, RTSP, RTMP, HLS 等流媒体协议，可直接播放网络视频和直播源。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 下载区域 -->
+    <section class="downloads" id="downloads">
+        <div class="container">
+            <div class="section-title">
+                <h2>下载 MedMediaPlayer</h2>
+                <p>选择您的操作系统下载最新版本</p>
+            </div>
+            
+            <div class="download-tabs">
+                <button class="tab-btn active" data-platform="all">全部平台</button>
+                <button class="tab-btn" data-platform="windows">Windows</button>
+                <button class="tab-btn" data-platform="mac">macOS</button>
+                <button class="tab-btn" data-platform="linux">Linux</button>
+                <button class="tab-btn" data-platform="mobile">移动端</button>
+                <button class="tab-btn" data-platform="other">其他</button>
+            </div>
+            
+            <div class="platform-grid">
+                <div class="platform-card" data-platform="windows">
+                    <div class="platform-icon">
+                        <i class="fab fa-windows"></i>
+                    </div>
+                    <h3>Windows</h3>
+                    <p>适用于 Windows 7/8/10/11 系统，32位和64位版本</p>
+                    <div class="download-options">
+                        <button class="download-btn">
+                            <i class="fas fa-download"></i> 下载 (32位)
+                        </button>
+                        <button class="btn-secondary">
+                            <i class="fas fa-download"></i> 下载 (64位)
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="platform-card" data-platform="mac">
+                    <div class="dev-badge">开发中</div>
+                    <div class="platform-icon">
+                        <i class="fab fa-apple"></i>
+                    </div>
+                    <h3>macOS</h3>
+                    <p>适用于 macOS 10.12 及以上版本，支持 Intel 和 Apple Silicon</p>
+                    <div class="download-options">
+                        <button class="download-btn disabled">
+                            <i class="fas fa-tools"></i> 开发中
+                        </button>
+                        <button class="btn-secondary disabled">
+                            <i class="fas fa-tools"></i> 开发中
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="platform-card" data-platform="linux">
+                    <div class="platform-icon">
+                        <i class="fab fa-linux"></i>
+                    </div>
+                    <h3>Linux</h3>
+                    <p>提供 AppImage、Snap 包和各大发行版的安装包</p>
+                    <div class="download-options">
+                        <button class="download-btn">
+                            <i class="fas fa-download"></i> 下载 .deb 包
+                        </button>
+                        <button class="btn-secondary">
+                            <i class="fas fa-download"></i> 下载 AppImage
+                        </button>
+                        <button class="btn-secondary">
+                            <i class="fas fa-book"></i> 安装指南
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="platform-card" data-platform="mobile">
+                    <div class="dev-badge">开发中</div>
+                    <div class="platform-icon">
+                        <i class="fab fa-android"></i>
+                    </div>
+                    <h3>Android</h3>
+                    <p>适用于 Android 5.0 及以上版本，支持 ARM 和 x86 设备</p>
+                    <div class="download-options">
+                        <button class="download-btn disabled">
+                            <i class="fas fa-tools"></i> 开发中
+                        </button>
+                        <button class="btn-secondary disabled">
+                            <i class="fas fa-tools"></i> 开发中
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="platform-card" data-platform="mobile">
+                    <div class="dev-badge">开发中</div>
+                    <div class="platform-icon">
+                        <i class="fab fa-apple"></i>
+                    </div>
+                    <h3>iOS/iPadOS</h3>
+                    <p>适用于 iOS 12.0 及更高版本，支持 iPhone 和 iPad</p>
+                    <div class="download-options">
+                        <button class="download-btn disabled">
+                            <i class="fas fa-tools"></i> 开发中
+                        </button>
+                        <button class="btn-secondary disabled">
+                            <i class="fas fa-tools"></i> 开发中
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="platform-card" data-platform="other">
+                    <div class="platform-icon">
+                        <i class="fas fa-terminal"></i>
+                    </div>
+                    <h3>命令行工具</h3>
+                    <p>适用于服务器和开发者的命令行版本</p>
+                    <div class="download-options">
+                        <button class="download-btn">
+                            <i class="fas fa-download"></i> 下载
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="platform-card" data-platform="other">
+                    <div class="platform-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <h3>源代码</h3>
+                    <p>获取完整的源代码，自行编译或参与开发</p>
+                    <div class="download-options">
+                        <button class="download-btn">
+                            <i class="fab fa-github"></i> GitHub
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="platform-card" data-platform="other">
+                    <div class="platform-icon">
+                        <i class="fas fa-cloud-download-alt"></i>
+                    </div>
+                    <h3>其他版本</h3>
+                    <p>历史版本、测试版和其他平台版本</p>
+                    <div class="download-options">
+                        <button class="download-btn">
+                            <i class="fas fa-download"></i> 所有版本
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 开发状态区域 -->
+    <section class="dev-status">
+        <div class="container">
+            <div class="section-title">
+                <h2>开发状态</h2>
+                <p>了解各个平台的开发进度</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fab fa-apple"></i>
+                    </div>
+                    <h3>macOS 版本</h3>
+                    <p>正在积极开发中，预计2025年Q2发布测试版。支持最新的Apple Silicon芯片和Intel处理器。</p>
+                    <div class="progress-bar">
+                        <div class="progress-value" style="width: 65%;"></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px; font-size: 14px; color: var(--text-secondary);">
+                        65% 完成
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fab fa-android"></i>
+                    </div>
+                    <h3>Android 版本</h3>
+                    <p>正在开发核心功能，适配各种安卓设备。计划2025年Q3发布首个测试版。</p>
+                    <div class="progress-bar">
+                        <div class="progress-value" style="width: 45%;"></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px; font-size: 14px; color: var(--text-secondary);">
+                        45% 完成
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fab fa-apple"></i>
+                    </div>
+                    <h3>iOS 版本</h3>
+                    <p>处于早期开发阶段，解决苹果系统兼容性问题。预计2025年Q4推出测试版。</p>
+                    <div class="progress-bar">
+                        <div class="progress-value" style="width: 30%;"></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px; font-size: 14px; color: var(--text-secondary);">
+                        30% 完成
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h3>MedMediaPlayer</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 关于我们</a></li>
+                        <li><a href="#features"><i class="fas fa-chevron-right"></i> 功能</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 截图</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 系统要求</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 更新日志</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>下载</h3>
+                    <ul class="footer-links">
+                        <li><a href="#downloads"><i class="fas fa-chevron-right"></i> Windows</a></li>
+                        <li><a href="#downloads"><i class="fas fa-chevron-right"></i> macOS</a></li>
+                        <li><a href="#downloads"><i class="fas fa-chevron-right"></i> Linux</a></li>
+                        <li><a href="#downloads"><i class="fas fa-chevron-right"></i> Android</a></li>
+                        <li><a href="#downloads"><i class="fas fa-chevron-right"></i> iOS</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>开发</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 文档</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> API</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 插件开发</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 源码仓库</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 贡献指南</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>社区</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 论坛</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 问题追踪</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 社交媒体</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 博客</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> 捐赠</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>© 2025 MedMediaPlayer 项目。遵循 GPLv3 开源协议发布。</p>
+                <p>网站设计灵感来自 VLC 媒体播放器官方网站，采用蓝色主题和深色模式支持。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 打字机效果
+        const typewriterText = document.getElementById('typewriter');
+        const texts = ['开源媒体播放器', '跨平台解决方案', '视频播放专家', '音频播放利器'];
+        let textIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        let typingSpeed = 100;
+        
+        function typeEffect() {
+            const currentText = texts[textIndex];
+            
+            if (isDeleting) {
+                // 删除字符
+                typewriterText.textContent = currentText.substring(0, charIndex - 1);
+                charIndex--;
+                typingSpeed = 50;
+            } else {
+                // 输入字符
+                typewriterText.textContent = currentText.substring(0, charIndex + 1);
+                charIndex++;
+                typingSpeed = 100;
+            }
+            
+            // 判断当前文本状态
+            if (!isDeleting && charIndex === currentText.length) {
+                // 完成输入，暂停一下然后开始删除
+                typingSpeed = 1500;
+                isDeleting = true;
+            } else if (isDeleting && charIndex === 0) {
+                // 完成删除，切换到下一个文本
+                isDeleting = false;
+                textIndex = (textIndex + 1) % texts.length;
+                typingSpeed = 500;
+            }
+            
+            setTimeout(typeEffect, typingSpeed);
+        }
+        
+        // 主题切换功能
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        const themeIcon = themeToggle.querySelector('i');
+        
+        // 检查本地存储中保存的主题偏好
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            body.classList.add('dark-mode');
+            themeIcon.classList.remove('fa-sun');
+            themeIcon.classList.add('fa-moon');
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            
+            // 切换图标
+            if (body.classList.contains('dark-mode')) {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+        
+        // 语言选择器
+        const languageBtn = document.querySelector('.language-btn');
+        const languageDropdown = document.querySelector('.language-dropdown');
+        const languageOptions = document.querySelectorAll('.language-option');
+        const languageModal = document.getElementById('languageModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const confirmLanguage = document.getElementById('confirmLanguage');
+        const cancelLanguage = document.getElementById('cancelLanguage');
+        
+        let selectedLanguage = null;
+        
+        languageBtn.addEventListener('click', () => {
+            languageDropdown.classList.toggle('show');
+        });
+        
+        languageOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const lang = option.getAttribute('data-lang');
+                let text = option.querySelector('span').textContent;
+                
+                // 设置选中的语言
+                selectedLanguage = lang;
+                
+                // 更新模态框消息
+                modalMessage.textContent = `您将切换到${text}页面`;
+                
+                // 显示模态框
+                languageModal.classList.add('active');
+                
+                // 关闭下拉菜单
+                languageDropdown.classList.remove('show');
+            });
+        });
+        
+        // 确认切换语言
+        confirmLanguage.addEventListener('click', () => {
+            if (selectedLanguage) {
+                // 在实际应用中，这里应该跳转到相应语言的页面
+                // 例如: window.location.href = `index_${selectedLanguage}.html`;
+                
+                // 这里仅显示成功消息
+                const originalHTML = confirmLanguage.innerHTML;
+                confirmLanguage.innerHTML = '<i class="fas fa-check"></i> 切换中...';
+                
+                setTimeout(() => {
+                    confirmLanguage.innerHTML = '<i class="fas fa-check-circle"></i> 切换成功';
+                    confirmLanguage.style.background = 'var(--success)';
+                    
+                    setTimeout(() => {
+                        languageModal.classList.remove('active');
+                        confirmLanguage.innerHTML = originalHTML;
+                        confirmLanguage.style.background = '';
+                    }, 1500);
+                }, 1000);
+            }
+        });
+        
+        // 取消切换语言
+        cancelLanguage.addEventListener('click', () => {
+            languageModal.classList.remove('active');
+            selectedLanguage = null;
+        });
+        
+        // 点击模态框外部关闭
+        languageModal.addEventListener('click', (e) => {
+            if (e.target === languageModal) {
+                languageModal.classList.remove('active');
+                selectedLanguage = null;
+            }
+        });
+        
+        // 下载标签页切换功能
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const platformCards = document.querySelectorAll('.platform-card');
+        
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 移除所有活动状态
+                tabBtns.forEach(b => b.classList.remove('active'));
+                // 添加当前活动状态
+                btn.classList.add('active');
+                
+                const platform = btn.getAttribute('data-platform');
+                
+                // 显示/隐藏平台卡片
+                platformCards.forEach(card => {
+                    if (platform === 'all' || card.getAttribute('data-platform') === platform) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // 下载按钮动画
+        const downloadBtns = document.querySelectorAll('.download-btn:not(.disabled)');
+        downloadBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 下载中...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-check-circle"></i> 下载完成！';
+                    this.style.background = 'var(--success)';
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalHTML;
+                        this.disabled = false;
+                        this.style.background = '';
+                    }, 2000);
+                }, 1500);
+            });
+        });
+        
+        // 查看功能按钮滚动
+        document.getElementById('viewFeatures').addEventListener('click', () => {
+            document.getElementById('features').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        });
+        
+        // 启动打字机效果
+        setTimeout(typeEffect, 1000);
+    </script>
+</body>
+</html>
