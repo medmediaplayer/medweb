@@ -712,70 +712,6 @@
             color: var(--text-secondary);
             font-size: 14px;
         }
-        
-        /* Language modal */
-        .language-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-        }
-        
-        .language-modal.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .language-modal-content {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transform: translateY(30px);
-            transition: transform 0.4s;
-        }
-        
-        .language-modal.active .language-modal-content {
-            transform: translateY(0);
-        }
-        
-        .language-modal h3 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: var(--primary-color);
-        }
-        
-        .language-modal p {
-            margin-bottom: 30px;
-            color: var(--text);
-            font-size: 18px;
-        }
-        
-        .language-modal-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-        
-        .language-modal .download-btn {
-            flex: 1;
-        }
-        
-        .language-modal .btn-secondary {
-            flex: 1;
-        }
 
         /* Responsive adjustments */
         @media (max-width: 992px) {
@@ -818,10 +754,6 @@
             .section-title h2 {
                 font-size: 28px;
             }
-            
-            .language-modal-buttons {
-                flex-direction: column;
-            }
         }
 
         @media (max-width: 480px) {
@@ -840,30 +772,10 @@
             .typewriter-container {
                 min-height: 60px;
             }
-            
-            .language-modal-content {
-                padding: 20px;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- Language modal -->
-    <div class="language-modal" id="languageModal">
-        <div class="language-modal-content">
-            <h3>Language Change Confirmation</h3>
-            <p id="modalMessage">You are switching to the English page</p>
-            <div class="language-modal-buttons">
-                <button class="download-btn" id="confirmLanguage">
-                    <i class="fas fa-check"></i> Confirm
-                </button>
-                <button class="btn-secondary" id="cancelLanguage">
-                    <i class="fas fa-times"></i> Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Navbar -->
     <header>
         <div class="container">
@@ -896,6 +808,7 @@
                                 <span>简体中文</span>
                             </div>
                             <div class="language-option" data-lang="zh-hk">
+                                <img src="https://flagcdn.com/w20/hk.png" class="language-flag" alt="繁體中文">
                                 <span>繁體中文</span>
                             </div>
                         </div>
@@ -1350,71 +1263,28 @@
         const languageBtn = document.querySelector('.language-btn');
         const languageDropdown = document.querySelector('.language-dropdown');
         const languageOptions = document.querySelectorAll('.language-option');
-        const languageModal = document.getElementById('languageModal');
-        const modalMessage = document.getElementById('modalMessage');
-        const confirmLanguage = document.getElementById('confirmLanguage');
-        const cancelLanguage = document.getElementById('cancelLanguage');
-        
-        let selectedLanguage = null;
         
         languageBtn.addEventListener('click', () => {
             languageDropdown.classList.toggle('show');
         });
         
+        // Language selection with direct page redirection
         languageOptions.forEach(option => {
             option.addEventListener('click', () => {
                 const lang = option.getAttribute('data-lang');
-                let text = option.querySelector('span').textContent;
                 
-                // Set selected language
-                selectedLanguage = lang;
-                
-                // Update modal message
-                modalMessage.textContent = `You are switching to the ${text} page`;
-                
-                // Show modal
-                languageModal.classList.add('active');
-                
-                // Close dropdown
+                // Hide dropdown
                 languageDropdown.classList.remove('show');
+                
+                // Redirect to the selected language page
+                if (lang === 'zh-CN') {
+                    window.location.href = 'https://medmediaplayer.github.io/medweb/index.html';
+                } else if (lang === 'zh-hk') {
+                    window.location.href = 'https://medmediaplayer.github.io/medweb/hk.html';
+                } else if (lang === 'en') {
+                    window.location.href = 'https://medmediaplayer.github.io/medweb/en.html';
+                }
             });
-        });
-        
-        // Confirm language switch
-        confirmLanguage.addEventListener('click', () => {
-            if (selectedLanguage) {
-                // In a real application, this should redirect to the language page
-                // Example: window.location.href = `index_${selectedLanguage}.html`;
-                
-                // Here we just show a success message
-                const originalHTML = confirmLanguage.innerHTML;
-                confirmLanguage.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Switching...';
-                
-                setTimeout(() => {
-                    confirmLanguage.innerHTML = '<i class="fas fa-check-circle"></i> Switched';
-                    confirmLanguage.style.background = 'var(--success)';
-                    
-                    setTimeout(() => {
-                        languageModal.classList.remove('active');
-                        confirmLanguage.innerHTML = originalHTML;
-                        confirmLanguage.style.background = '';
-                    }, 1500);
-                }, 1000);
-            }
-        });
-        
-        // Cancel language switch
-        cancelLanguage.addEventListener('click', () => {
-            languageModal.classList.remove('active');
-            selectedLanguage = null;
-        });
-        
-        // Close modal when clicking outside
-        languageModal.addEventListener('click', (e) => {
-            if (e.target === languageModal) {
-                languageModal.classList.remove('active');
-                selectedLanguage = null;
-            }
         });
         
         // Download tabs functionality
@@ -1474,4 +1344,3 @@
     </script>
 </body>
 </html>
-<script src="main.js"></script>

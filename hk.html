@@ -712,70 +712,6 @@
             color: var(--text-secondary);
             font-size: 14px;
         }
-        
-        /* 語言切換模態框 */
-        .language-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-        }
-        
-        .language-modal.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .language-modal-content {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transform: translateY(30px);
-            transition: transform 0.4s;
-        }
-        
-        .language-modal.active .language-modal-content {
-            transform: translateY(0);
-        }
-        
-        .language-modal h3 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: var(--primary-color);
-        }
-        
-        .language-modal p {
-            margin-bottom: 30px;
-            color: var(--text);
-            font-size: 18px;
-        }
-        
-        .language-modal-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-        
-        .language-modal .download-btn {
-            flex: 1;
-        }
-        
-        .language-modal .btn-secondary {
-            flex: 1;
-        }
 
         /* 響應式調整 */
         @media (max-width: 992px) {
@@ -818,10 +754,6 @@
             .section-title h2 {
                 font-size: 28px;
             }
-            
-            .language-modal-buttons {
-                flex-direction: column;
-            }
         }
 
         @media (max-width: 480px) {
@@ -840,30 +772,10 @@
             .typewriter-container {
                 min-height: 60px;
             }
-            
-            .language-modal-content {
-                padding: 20px;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- 語言切換模態框 -->
-    <div class="language-modal" id="languageModal">
-        <div class="language-modal-content">
-            <h3>即將切換語言</h3>
-            <p id="modalMessage">您將切換到繁體中文頁面</p>
-            <div class="language-modal-buttons">
-                <button class="download-btn" id="confirmLanguage">
-                    <i class="fas fa-check"></i> 確認切換
-                </button>
-                <button class="btn-secondary" id="cancelLanguage">
-                    <i class="fas fa-times"></i> 取消
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- 導航欄 -->
     <header>
         <div class="container">
@@ -890,6 +802,7 @@
                                 <span>繁體中文</span>
                             </div>
                             <div class="language-option" data-lang="zh-CN">
+                                <img src="https://flagcdn.com/w20/cn.png" class="language-flag" alt="简体中文">
                                 <span>简体中文</span>
                             </div>
                             <div class="language-option" data-lang="en">
@@ -1344,16 +1257,10 @@
             }
         });
         
-        // 語言選擇器
+        // 語言選擇器 - 直接跳轉
         const languageBtn = document.querySelector('.language-btn');
         const languageDropdown = document.querySelector('.language-dropdown');
         const languageOptions = document.querySelectorAll('.language-option');
-        const languageModal = document.getElementById('languageModal');
-        const modalMessage = document.getElementById('modalMessage');
-        const confirmLanguage = document.getElementById('confirmLanguage');
-        const cancelLanguage = document.getElementById('cancelLanguage');
-        
-        let selectedLanguage = null;
         
         languageBtn.addEventListener('click', () => {
             languageDropdown.classList.toggle('show');
@@ -1362,57 +1269,14 @@
         languageOptions.forEach(option => {
             option.addEventListener('click', () => {
                 const lang = option.getAttribute('data-lang');
-                let text = option.querySelector('span').textContent;
-                
-                // 設定選中的語言
-                selectedLanguage = lang;
-                
-                // 更新模態框訊息
-                modalMessage.textContent = `您將切換到${text}頁面`;
-                
-                // 顯示模態框
-                languageModal.classList.add('active');
-                
-                // 關閉下拉選單
+                if (lang === 'zh-CN') {
+                    window.location.href = 'https://medmediaplayer.github.io/medweb/index.html';
+                } else if (lang === 'en') {
+                    window.location.href = 'https://medmediaplayer.github.io/medweb/en.html';
+                }
+                // 繁體中文不需要跳轉，已經在當前頁面
                 languageDropdown.classList.remove('show');
             });
-        });
-        
-        // 確認切換語言
-        confirmLanguage.addEventListener('click', () => {
-            if (selectedLanguage) {
-                // 在實際應用中，這裡應該跳轉到相應語言的頁面
-                // 例如: window.location.href = `index_${selectedLanguage}.html`;
-                
-                // 這裡僅顯示成功訊息
-                const originalHTML = confirmLanguage.innerHTML;
-                confirmLanguage.innerHTML = '<i class="fas fa-check"></i> 切換中...';
-                
-                setTimeout(() => {
-                    confirmLanguage.innerHTML = '<i class="fas fa-check-circle"></i> 切換成功';
-                    confirmLanguage.style.background = 'var(--success)';
-                    
-                    setTimeout(() => {
-                        languageModal.classList.remove('active');
-                        confirmLanguage.innerHTML = originalHTML;
-                        confirmLanguage.style.background = '';
-                    }, 1500);
-                }, 1000);
-            }
-        });
-        
-        // 取消切換語言
-        cancelLanguage.addEventListener('click', () => {
-            languageModal.classList.remove('active');
-            selectedLanguage = null;
-        });
-        
-        // 點擊模態框外部關閉
-        languageModal.addEventListener('click', (e) => {
-            if (e.target === languageModal) {
-                languageModal.classList.remove('active');
-                selectedLanguage = null;
-            }
         });
         
         // 下載標籤頁切換功能
@@ -1472,4 +1336,3 @@
     </script>
 </body>
 </html>
-<script src="main.js"></script>
